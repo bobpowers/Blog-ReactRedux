@@ -1,20 +1,32 @@
 import React, { Component } from 'react';
 // reduxForm is very similar to the 'connect' helper in react-redux
 import { Field, reduxForm } from 'redux-form';
+import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { createPost } from '../actions';
 
 class PostsNew extends Component {
 	renderField(field) {
+		//this helps us not have to type 'field.meta...' every time this is 'Destructuring'
+		//additionally you can go further down the chain and grab touched and error
+		//off of the meta tag so you dont need to reference that every time as well
+		const {
+			meta: { touched, error }
+		} = field;
+		const className = `form-group ${touched && error ? 'has-danger' : ''}`;
 		return (
-			<div className="form-group">
+			<div className={className}>
 				<label>{field.label}</label>
 				<input className="form-control" type="text" {...field.input} />
-				{field.meta.error}
+				<div className="text-help">{touched ? error : ''}</div>
 			</div>
 		);
 	}
 
 	onSubmit(values) {
-		console.log(values);
+		this.props.createPost(values, () => {
+			this.props.history.push('/');
+		});
 	}
 
 	render() {
@@ -41,6 +53,9 @@ class PostsNew extends Component {
 				<button type="submit" className="btn btn-primary">
 					Submit
 				</button>
+				<Link to="/" className="btn btn-danger">
+					Cancel
+				</Link>
 			</form>
 		);
 	}
@@ -69,4 +84,4 @@ function validate(values) {
 export default reduxForm({
 	validate,
 	form: 'PostsNewForm'
-})(PostsNew);
+})(connect(null, { createPost })(PostsNew));
